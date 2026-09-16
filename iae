@@ -21,6 +21,24 @@ if tmux has-session -t "$SESSION" 2>/dev/null; then
   exit 0
 fi
 
+# Mirrors omarchy-launch-editor's own TUI allowlist: only these are safe to
+# exec inline in a tmux pane. A GUI default (code, cursor, emacs, ...) would
+# detach and leave the pane idle, so fall back to nvim instead.
+EDITOR_DEFAULT_FILE="$HOME/.local/state/omarchy/defaults/editor"
+if [ -f "$EDITOR_DEFAULT_FILE" ]; then
+  read -r EDITOR_CMD <"$EDITOR_DEFAULT_FILE"
+else
+  EDITOR_CMD="nvim"
+fi
+case "$EDITOR_CMD" in
+  nvim | vim | nano | micro | hx | helix | fresh)
+    command -v "$EDITOR_CMD" >/dev/null 2>&1 || EDITOR_CMD="nvim"
+    ;;
+  *)
+    EDITOR_CMD="nvim"
+    ;;
+esac
+
 EDITOR_PANE=$(tmux new-session -d -s "$SESSION" -c "$PROJECT_DIR" -n main -P -F '#{pane_id}')
 
 AGENT_PANE=$(tmux split-window -t "$EDITOR_PANE" -h -l 35% -c "$PROJECT_DIR" -P -F '#{pane_id}')
@@ -28,7 +46,7 @@ tmux select-pane -t "$EDITOR_PANE"
 SHELL_PANE=$(tmux split-window -t "$EDITOR_PANE" -v -l 35% -c "$PROJECT_DIR" -P -F '#{pane_id}')
 GITLOG_PANE=$(tmux split-window -t "$SHELL_PANE" -h -l 70% -c "$PROJECT_DIR" -P -F '#{pane_id}')
 
-tmux send-keys -t "$EDITOR_PANE" "nvim ." C-m
+tmux send-keys -t "$EDITOR_PANE" "$EDITOR_CMD ." C-m
 tmux send-keys -t "$AGENT_PANE" "omarchy-agent --inline" C-m
 
 if git -C "$PROJECT_DIR" rev-parse --is-inside-work-tree >/dev/null 2>&1; then

@@ -5,7 +5,7 @@ setup, built to run on [Omarchy Linux](https://omarchy.org).
 
 A single script (`iae`) sets up a tmux session with 4 fixed panes:
 
-- **editor** — `nvim`
+- **editor** — Omarchy's default editor (`omarchy-default-editor`), when it's a TUI editor (nvim, vim, nano, micro, helix); falls back to `nvim` otherwise
 - **agent** — Omarchy's default coding agent (`omarchy-agent`, configurable via `omarchy default agent <name>`)
 - **shell** — free, the system's default shell
 - **git/logs** — `lazygit`
