@@ -30,7 +30,12 @@ GITLOG_PANE=$(tmux split-window -t "$SHELL_PANE" -h -l 66% -c "$PROJECT_DIR" -P 
 
 tmux send-keys -t "$EDITOR_PANE" "nvim ." C-m
 tmux send-keys -t "$AGENT_PANE" "omarchy-agent --inline" C-m
-tmux send-keys -t "$GITLOG_PANE" "lazygit" C-m
+
+if git -C "$PROJECT_DIR" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+  tmux send-keys -t "$GITLOG_PANE" "lazygit" C-m
+else
+  tmux send-keys -t "$GITLOG_PANE" "echo 'iae: não é um repositório git, lazygit não iniciado (rode git init se quiser um)'" C-m
+fi
 
 tmux select-pane -t "$EDITOR_PANE"
 
