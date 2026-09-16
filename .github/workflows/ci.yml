@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Syntax check
+        run: |
+          bash -n iae
+          bash -n install.sh
+          bash -n lib/layout.sh
+          bash -n tests/smoke.sh
+          bash -n tests/layout.sh
+
+      - name: ShellCheck
+        uses: ludeeus/action-shellcheck@2.0.0
+        with:
+          scandir: '.'
+
+      - name: Install runtime dependencies
+        run: sudo apt-get update && sudo apt-get install -y tmux tig neovim
+
+      - name: Run tests
+        run: |
+          ./tests/layout.sh
+          ./tests/smoke.sh
