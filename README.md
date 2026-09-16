@@ -1,42 +1,44 @@
 # iae
 
-Ambiente TUI para desenvolvimento agentic, inspirado no setup tmux+editor do
-craftzdog, feito para rodar no [Omarchy Linux](https://omarchy.org).
+TUI environment for agentic development, inspired by craftzdog's tmux+editor
+setup, built to run on [Omarchy Linux](https://omarchy.org).
 
-Um único script (`iae`) monta uma sessão tmux com 4 painéis fixos:
+A single script (`iae`) sets up a tmux session with 4 fixed panes:
 
 - **editor** — `nvim`
-- **agente** — o agente de codificação padrão do Omarchy (`omarchy-agent`, configurável via `omarchy default agent <nome>`)
-- **shell** — livre, o shell padrão do sistema
+- **agent** — Omarchy's default coding agent (`omarchy-agent`, configurable via `omarchy default agent <name>`)
+- **shell** — free, the system's default shell
 - **git/logs** — `lazygit`
 
-## Instalação
+## Installation
 
 ```sh
 ./install.sh
 ```
 
-Cria um symlink de `iae` em `~/.local/bin` (padrão no Omarchy, já no `PATH`),
-deixando o comando disponível em qualquer diretório. Funciona não importa de
-onde você rode o script — ele resolve o próprio caminho, não o diretório
-atual do shell. Para instalar em outro lugar, passe o destino como argumento:
+Creates a symlink for `iae` in `~/.local/bin` (already on `PATH` by default
+on Omarchy), making the command available from any directory. Works no
+matter where you run it from — it resolves its own path, not the shell's
+current directory. To install somewhere else, pass the destination as an
+argument:
 
 ```sh
 ./install.sh ~/bin
 ```
 
-## Uso
+## Usage
 
 ```sh
-iae [caminho-do-projeto]
+iae [project-path]
 ```
 
-Sem argumento, usa o diretório atual. Rodar de novo no mesmo projeto reconecta
-na sessão existente em vez de duplicar os painéis. O nome da sessão é
-derivado do caminho canônico do projeto (não só do nome da pasta), então
-projetos diferentes com o mesmo nome de diretório (ex: dois `src/`) não
-colidem, e symlinks pro mesmo projeto reconectam na mesma sessão.
+With no argument, uses the current directory. Running it again on the same
+project reattaches to the existing session instead of duplicating the
+panes. The session name is derived from the project's canonical path (not
+just the folder name), so different projects sharing a directory name
+(e.g. two `src/`) don't collide, and symlinks to the same project reattach
+to the same session.
 
-## Dependências
+## Dependencies
 
-`tmux`, `nvim`, `omarchy-agent` e `lazygit` precisam estar no `PATH` (padrão em qualquer instalação do Omarchy).
+`tmux`, `nvim`, `omarchy-agent` and `lazygit` need to be on `PATH` (default on any Omarchy install).

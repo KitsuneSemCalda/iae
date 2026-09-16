@@ -3,7 +3,7 @@ set -euo pipefail
 
 for dep in tmux nvim omarchy-agent lazygit; do
   if ! command -v "$dep" >/dev/null 2>&1; then
-    echo "iae: dependência '$dep' não encontrada no PATH" >&2
+    echo "iae: dependency '$dep' not found on PATH" >&2
     exit 1
   fi
 done
@@ -34,7 +34,7 @@ tmux send-keys -t "$AGENT_PANE" "omarchy-agent --inline" C-m
 if git -C "$PROJECT_DIR" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
   tmux send-keys -t "$GITLOG_PANE" "lazygit" C-m
 else
-  tmux send-keys -t "$GITLOG_PANE" "echo 'iae: não é um repositório git, lazygit não iniciado (rode git init se quiser um)'" C-m
+  tmux send-keys -t "$GITLOG_PANE" "echo 'iae: not a git repository, lazygit not started (run git init if you want one)'" C-m
 fi
 
 tmux select-pane -t "$EDITOR_PANE"
