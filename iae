@@ -1,12 +1,24 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-for dep in tmux nvim omarchy-agent lazygit; do
+for dep in tmux nvim omarchy-agent; do
   if ! command -v "$dep" >/dev/null 2>&1; then
     echo "iae: dependency '$dep' not found on PATH" >&2
     exit 1
   fi
 done
+
+GIT_TOOL=""
+for candidate in tig lazygit; do
+  if command -v "$candidate" >/dev/null 2>&1; then
+    GIT_TOOL="$candidate"
+    break
+  fi
+done
+if [ -z "$GIT_TOOL" ]; then
+  echo "iae: dependency 'tig' or 'lazygit' not found on PATH" >&2
+  exit 1
+fi
 
 PROJECT_DIR="${1:-$PWD}"
 PROJECT_DIR="$(cd "$PROJECT_DIR" && pwd -P)"
@@ -50,9 +62,9 @@ tmux send-keys -t "$EDITOR_PANE" "$EDITOR_CMD ." C-m
 tmux send-keys -t "$AGENT_PANE" "omarchy-agent --inline" C-m
 
 if git -C "$PROJECT_DIR" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
-  tmux send-keys -t "$GITLOG_PANE" "lazygit" C-m
+  tmux send-keys -t "$GITLOG_PANE" "$GIT_TOOL" C-m
 else
-  tmux send-keys -t "$GITLOG_PANE" "echo 'iae: not a git repository, lazygit not started (run git init if you want one)'" C-m
+  tmux send-keys -t "$GITLOG_PANE" "echo 'iae: not a git repository, $GIT_TOOL not started (run git init if you want one)'" C-m
 fi
 
 tmux select-pane -t "$EDITOR_PANE"

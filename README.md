@@ -8,7 +8,7 @@ A single script (`iae`) sets up a tmux session with 4 fixed panes:
 - **editor** — Omarchy's default editor (`omarchy-default-editor`), when it's a TUI editor (nvim, vim, nano, micro, helix); falls back to `nvim` otherwise
 - **agent** — Omarchy's default coding agent (`omarchy-agent`, configurable via `omarchy default agent <name>`)
 - **shell** — free, the system's default shell
-- **git/logs** — `lazygit`
+- **git/logs** — `tig`, falling back to `lazygit` if `tig` isn't installed
 
 ## Installation
 
@@ -41,4 +41,4 @@ to the same session.
 
 ## Dependencies
 
-`tmux`, `nvim`, `omarchy-agent` and `lazygit` need to be on `PATH` (default on any Omarchy install).
+`tmux`, `nvim` and `omarchy-agent` need to be on `PATH` (default on any Omarchy install), plus at least one of `tig` or `lazygit`.
