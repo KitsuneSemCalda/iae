@@ -1,13 +1,15 @@
-# iae
+# iae — Integrated Agentic Environment
 
+![CI](https://github.com/KitsuneSemCalda/iae/actions/workflows/ci.yml/badge.svg)
 ![License](https://img.shields.io/github/license/KitsuneSemCalda/iae)
 ![Shell](https://img.shields.io/badge/shell-bash-89e051?logo=gnubash&logoColor=white)
 ![Built for Omarchy](https://img.shields.io/badge/built%20for-omarchy-1793d1)
 
-TUI environment for agentic development, inspired by craftzdog's tmux+editor
-setup, built to run on [Omarchy Linux](https://omarchy.org).
+A tmux workspace for agentic development, inspired by craftzdog's
+tmux+editor setup, built to run on [Omarchy Linux](https://omarchy.org).
 
-A single script (`iae`) sets up a tmux session with 4 fixed panes:
+A single script (`iae`) sets up a tmux session with 4 tools, each with a
+fixed role regardless of how they're arranged on screen:
 
 - **editor** — Omarchy's default editor (`omarchy-default-editor`), when it's a TUI editor (nvim, vim, nano, micro, helix); falls back to `nvim` otherwise
 - **agent** — Omarchy's default coding agent (`omarchy-agent`, configurable via `omarchy default agent <name>`)
@@ -18,21 +20,61 @@ A single script (`iae`) sets up a tmux session with 4 fixed panes:
 
 ![tig showing a diff in the git/logs pane](assets/screenshots/git-log.png)
 
+### Responsive layout
+
+The arrangement adapts to the terminal size, and keeps adapting live as you
+resize — the same editor/agent/shell/git tools just get re-laid-out
+in-place, without restarting anything:
+
+| State     | Terminal size            | Layout                                                              |
+|-----------|---------------------------|---------------------------------------------------------------------|
+| `wide`    | ≥180 cols and ≥45 lines   | The layout above: large editor, agent to the side, shell/git below |
+| `grid`    | ≥120 cols and ≥34 lines   | Even 2×2 grid — every tool gets usable space                       |
+| `compact` | below that                | Two tmux windows: `work` (editor + agent) and `inspect` (shell + git) |
+
+Below the `grid` threshold there just isn't room for four simultaneous
+panes to be useful, so `compact` trades simultaneity for two full-width
+windows you switch between (`prefix` + window number, as usual in tmux).
+
 ## Installation
 
+Clone the repository somewhere you're happy to keep it long-term, then run
+the installer:
+
 ```sh
+git clone https://github.com/KitsuneSemCalda/iae.git
+cd iae
 ./install.sh
 ```
 
-Creates a symlink for `iae` in `~/.local/bin` (already on `PATH` by default
-on Omarchy), making the command available from any directory. Works no
-matter where you run it from — it resolves its own path, not the shell's
-current directory. To install somewhere else, pass the destination as an
-argument:
+This creates a symlink for `iae` in `~/.local/bin` (already on `PATH` by
+default on Omarchy), pointing at this clone, so the command works from any
+directory. Because it's a symlink, moving or deleting the clone breaks the
+`iae` command — reinstall from its new location if you move it. To install
+the symlink somewhere else, pass the destination as an argument:
 
 ```sh
 ./install.sh ~/bin
 ```
+
+### Updating
+
+```sh
+cd path/to/iae
+git pull
+```
+
+The symlink always points at the clone, so a new command version is picked
+up immediately — no need to run `install.sh` again.
+
+### Uninstalling
+
+```sh
+rm ~/.local/bin/iae   # or wherever install.sh put the symlink
+```
+
+The clone itself (with its git history) can then be deleted if you don't
+plan on updating it again.
 
 ## Usage
 
@@ -49,4 +91,26 @@ to the same session.
 
 ## Dependencies
 
-`tmux`, `nvim` and `omarchy-agent` need to be on `PATH` (default on any Omarchy install), plus at least one of `tig` or `lazygit`.
+`tmux` and `omarchy-agent` need to be on `PATH` (default on any Omarchy
+install), plus at least one of `tig` or `lazygit`. The editor pane uses
+whatever `omarchy-default-editor` reports (nvim, vim, nano, micro or
+helix), falling back to `nvim` if that's unset or set to a GUI editor — so
+`nvim` only needs to be installed if you haven't configured one of the
+others, or as a safety net if the configured one is missing.
+
+## Testing
+
+```sh
+bash -n iae install.sh lib/layout.sh tests/*.sh   # syntax check
+shellcheck iae install.sh lib/layout.sh tests/*.sh
+./tests/layout.sh                                 # unit tests for the
+                                                   # wide/grid/compact state
+                                                   # machine (lib/layout.sh)
+./tests/smoke.sh                                  # launches the real iae
+                                                   # against a scratch git
+                                                   # repo and a live resize,
+                                                   # both on an isolated
+                                                   # tmux server
+```
+
+The same checks run in CI on every push (see `.github/workflows/ci.yml`).
