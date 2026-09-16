@@ -17,7 +17,10 @@ Um único script (`iae`) monta uma sessão tmux com 4 painéis fixos:
 ```
 
 Sem argumento, usa o diretório atual. Rodar de novo no mesmo projeto reconecta
-na sessão existente em vez de duplicar os painéis.
+na sessão existente em vez de duplicar os painéis. O nome da sessão é
+derivado do caminho canônico do projeto (não só do nome da pasta), então
+projetos diferentes com o mesmo nome de diretório (ex: dois `src/`) não
+colidem, e symlinks pro mesmo projeto reconectam na mesma sessão.
 
 ## Dependências
 

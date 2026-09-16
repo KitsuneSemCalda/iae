@@ -9,8 +9,8 @@ for dep in tmux nvim omarchy-agent lazygit; do
 done
 
 PROJECT_DIR="${1:-$PWD}"
-PROJECT_DIR="$(cd "$PROJECT_DIR" && pwd)"
-SESSION="iae-$(basename "$PROJECT_DIR" | tr '.: ' '_')"
+PROJECT_DIR="$(cd "$PROJECT_DIR" && pwd -P)"
+SESSION="iae-$(basename "$PROJECT_DIR" | tr '.: ' '_')-$(printf '%s' "$PROJECT_DIR" | cksum | cut -d' ' -f1)"
 
 if tmux has-session -t "$SESSION" 2>/dev/null; then
   if [ -n "${TMUX:-}" ]; then
