@@ -51,7 +51,17 @@ case "$EDITOR_CMD" in
     ;;
 esac
 
-EDITOR_PANE=$(tmux new-session -d -s "$SESSION" -c "$PROJECT_DIR" -n main -P -F '#{pane_id}')
+# A detached session starts at tmux's default 80x24 until a client attaches,
+# so splitting immediately would compute all percentages against that size.
+# The later attach then rescales the whole layout to the real terminal size,
+# which distorts nested split ratios (e.g. the git-log pane ending up smaller
+# than the shell pane). Sizing the session to the real terminal up front
+# avoids that rescale.
+read -r TERM_LINES TERM_COLS < <(stty size 2>/dev/null) || true
+TERM_COLS="${TERM_COLS:-80}"
+TERM_LINES="${TERM_LINES:-24}"
+
+EDITOR_PANE=$(tmux new-session -d -s "$SESSION" -x "$TERM_COLS" -y "$TERM_LINES" -c "$PROJECT_DIR" -n main -P -F '#{pane_id}')
 
 AGENT_PANE=$(tmux split-window -t "$EDITOR_PANE" -h -l 35% -c "$PROJECT_DIR" -P -F '#{pane_id}')
 tmux select-pane -t "$EDITOR_PANE"
