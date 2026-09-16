@@ -13,11 +13,17 @@ Um único script (`iae`) monta uma sessão tmux com 4 painéis fixos:
 ## Instalação
 
 ```sh
-ln -sfn "$(pwd)/iae" ~/.local/bin/iae
+./install.sh
 ```
 
-Deixa o comando `iae` disponível em qualquer diretório (assumindo
-`~/.local/bin` no `PATH`, já o padrão no Omarchy).
+Cria um symlink de `iae` em `~/.local/bin` (padrão no Omarchy, já no `PATH`),
+deixando o comando disponível em qualquer diretório. Funciona não importa de
+onde você rode o script — ele resolve o próprio caminho, não o diretório
+atual do shell. Para instalar em outro lugar, passe o destino como argumento:
+
+```sh
+./install.sh ~/bin
+```
 
 ## Uso
 
