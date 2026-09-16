@@ -10,21 +10,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y shellcheck tmux tig neovim
+
       - name: Syntax check
         run: |
           bash -n iae
           bash -n install.sh
           bash -n lib/layout.sh
-          bash -n tests/smoke.sh
           bash -n tests/layout.sh
+          bash -n tests/smoke.sh
 
       - name: ShellCheck
-        uses: ludeeus/action-shellcheck@2.0.0
-        with:
-          scandir: '.'
-
-      - name: Install runtime dependencies
-        run: sudo apt-get update && sudo apt-get install -y tmux tig neovim
+        run: shellcheck -x -P SCRIPTDIR iae install.sh lib/layout.sh tests/layout.sh tests/smoke.sh
 
       - name: Run tests
         run: |
