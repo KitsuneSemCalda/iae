@@ -1,5 +1,9 @@
 # iae
 
+![License](https://img.shields.io/github/license/KitsuneSemCalda/iae)
+![Shell](https://img.shields.io/badge/shell-bash-89e051?logo=gnubash&logoColor=white)
+![Built for Omarchy](https://img.shields.io/badge/built%20for-omarchy-1793d1)
+
 TUI environment for agentic development, inspired by craftzdog's tmux+editor
 setup, built to run on [Omarchy Linux](https://omarchy.org).
 
