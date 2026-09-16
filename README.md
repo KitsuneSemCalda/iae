@@ -101,8 +101,8 @@ others, or as a safety net if the configured one is missing.
 ## Testing
 
 ```sh
-bash -n iae install.sh lib/layout.sh tests/*.sh   # syntax check
-shellcheck iae install.sh lib/layout.sh tests/*.sh
+bash -n iae install.sh lib/layout.sh tests/*.sh      # syntax check
+shellcheck -x -P SCRIPTDIR iae install.sh lib/layout.sh tests/*.sh
 ./tests/layout.sh                                 # unit tests for the
                                                    # wide/grid/compact state
                                                    # machine (lib/layout.sh)

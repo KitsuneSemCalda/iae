@@ -10,8 +10,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install -y shellcheck tmux tig neovim
+      - name: Install ShellCheck
+        run: |
+          curl -Ls "https://github.com/koalaman/shellcheck/releases/download/stable/shellcheck-stable.linux.x86_64.tar.xz" | tar -xJ
+          sudo install shellcheck-stable/shellcheck /usr/local/bin/shellcheck
+          shellcheck --version
+
+      - name: Install runtime dependencies
+        run: sudo apt-get update && sudo apt-get install -y tmux tig neovim
 
       - name: Syntax check
         run: |
