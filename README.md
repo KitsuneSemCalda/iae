@@ -6,8 +6,8 @@ craftzdog, feito para rodar no [Omarchy Linux](https://omarchy.org).
 Um único script (`iae`) monta uma sessão tmux com 4 painéis fixos:
 
 - **editor** — `nvim`
-- **agente** — `claude`
-- **shell** — livre, pra comandos gerais
+- **agente** — o agente de codificação padrão do Omarchy (`omarchy-agent`, configurável via `omarchy default agent <nome>`)
+- **shell** — livre, o shell padrão do sistema
 - **git/logs** — `lazygit`
 
 ## Uso
@@ -21,4 +21,4 @@ na sessão existente em vez de duplicar os painéis.
 
 ## Dependências
 
-`tmux`, `nvim`, `claude` (Claude Code) e `lazygit` precisam estar no `PATH`.
+`tmux`, `nvim`, `omarchy-agent` e `lazygit` precisam estar no `PATH` (padrão em qualquer instalação do Omarchy).
