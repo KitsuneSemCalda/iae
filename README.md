@@ -10,6 +10,10 @@ A single script (`iae`) sets up a tmux session with 4 fixed panes:
 - **shell** — free, the system's default shell
 - **git/logs** — `tig`, falling back to `lazygit` if `tig` isn't installed
 
+![Editor, agent, shell and git/logs panes side by side](assets/screenshots/overview.png)
+
+![tig showing a diff in the git/logs pane](assets/screenshots/git-log.png)
+
 ## Installation
 
 ```sh
