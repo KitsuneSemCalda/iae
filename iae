@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-for dep in tmux nvim omarchy-agent; do
+for dep in tmux omarchy-agent; do
   if ! command -v "$dep" >/dev/null 2>&1; then
     echo "iae: dependency '$dep' not found on PATH" >&2
     exit 1
@@ -36,20 +36,18 @@ fi
 # Mirrors omarchy-launch-editor's own TUI allowlist: only these are safe to
 # exec inline in a tmux pane. A GUI default (code, cursor, emacs, ...) would
 # detach and leave the pane idle, so fall back to nvim instead.
-EDITOR_DEFAULT_FILE="$HOME/.local/state/omarchy/defaults/editor"
-if [ -f "$EDITOR_DEFAULT_FILE" ]; then
-  read -r EDITOR_CMD <"$EDITOR_DEFAULT_FILE"
-else
+EDITOR_CMD="$(omarchy-default-editor 2>/dev/null || echo nvim)"
+case "$EDITOR_CMD" in
+  nvim | vim | nano | micro | hx | helix | fresh) ;;
+  *) EDITOR_CMD="nvim" ;;
+esac
+if ! command -v "$EDITOR_CMD" >/dev/null 2>&1; then
+  if [ "$EDITOR_CMD" = "nvim" ] || ! command -v nvim >/dev/null 2>&1; then
+    echo "iae: editor '$EDITOR_CMD' not found on PATH (and no 'nvim' fallback available)" >&2
+    exit 1
+  fi
   EDITOR_CMD="nvim"
 fi
-case "$EDITOR_CMD" in
-  nvim | vim | nano | micro | hx | helix | fresh)
-    command -v "$EDITOR_CMD" >/dev/null 2>&1 || EDITOR_CMD="nvim"
-    ;;
-  *)
-    EDITOR_CMD="nvim"
-    ;;
-esac
 
 # A detached session starts at tmux's default 80x24 until a client attaches,
 # so splitting immediately would compute all percentages against that size.
