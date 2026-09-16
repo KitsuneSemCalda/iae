@@ -1,6 +1,29 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Resolve the real path, not the symlink's, so it works whether we're run
+# straight from the clone or via the ~/.local/bin symlink install.sh makes.
+SCRIPT_PATH="$(readlink -f "${BASH_SOURCE[0]}")"
+SCRIPT_DIR="$(dirname "$SCRIPT_PATH")"
+# shellcheck source=lib/layout.sh
+source "$SCRIPT_DIR/lib/layout.sh"
+
+# Internal entry point: the window-resized hook (see layout_install_resize_hook)
+# calls back into this same script to reflow an already-running session.
+if [ "${1:-}" = "--reflow" ]; then
+  SESSION="${2:-}"
+  [ -n "$SESSION" ] || exit 0
+  tmux has-session -t "$SESSION" 2>/dev/null || exit 0
+
+  read -r COLS LINES < <(tmux display-message -p -t "$SESSION" '#{window_width} #{window_height}')
+  NEW_STATE="$(detect_layout "$COLS" "$LINES")"
+  CUR_STATE="$(tmux show-options -qv -t "$SESSION" @iae-layout)"
+  [ "$NEW_STATE" = "$CUR_STATE" ] && exit 0
+
+  layout_reflow "$SESSION" "$NEW_STATE"
+  exit 0
+fi
+
 for dep in tmux omarchy-agent; do
   if ! command -v "$dep" >/dev/null 2>&1; then
     echo "iae: dependency '$dep' not found on PATH" >&2
@@ -50,32 +73,17 @@ if ! command -v "$EDITOR_CMD" >/dev/null 2>&1; then
 fi
 
 # A detached session starts at tmux's default 80x24 until a client attaches,
-# so splitting immediately would compute all percentages against that size.
-# The later attach then rescales the whole layout to the real terminal size,
-# which distorts nested split ratios (e.g. the git-log pane ending up smaller
-# than the shell pane). Sizing the session to the real terminal up front
-# avoids that rescale.
+# so building the layout immediately would compute it against that size.
+# The later attach then resizes the whole session to the real terminal,
+# which would trigger our own resize hook right away. Sizing upfront avoids
+# both problems: distorted initial ratios and a redundant reflow.
 read -r TERM_LINES TERM_COLS < <(stty size 2>/dev/null) || true
 TERM_COLS="${TERM_COLS:-80}"
 TERM_LINES="${TERM_LINES:-24}"
 
-EDITOR_PANE=$(tmux new-session -d -s "$SESSION" -x "$TERM_COLS" -y "$TERM_LINES" -c "$PROJECT_DIR" -n main -P -F '#{pane_id}')
-
-AGENT_PANE=$(tmux split-window -t "$EDITOR_PANE" -h -l 35% -c "$PROJECT_DIR" -P -F '#{pane_id}')
-tmux select-pane -t "$EDITOR_PANE"
-SHELL_PANE=$(tmux split-window -t "$EDITOR_PANE" -v -l 35% -c "$PROJECT_DIR" -P -F '#{pane_id}')
-GITLOG_PANE=$(tmux split-window -t "$SHELL_PANE" -h -l 70% -c "$PROJECT_DIR" -P -F '#{pane_id}')
-
-tmux send-keys -t "$EDITOR_PANE" "$EDITOR_CMD ." C-m
-tmux send-keys -t "$AGENT_PANE" "omarchy-agent --inline" C-m
-
-if git -C "$PROJECT_DIR" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
-  tmux send-keys -t "$GITLOG_PANE" "$GIT_TOOL" C-m
-else
-  tmux send-keys -t "$GITLOG_PANE" "echo 'iae: not a git repository, $GIT_TOOL not started (run git init if you want one)'" C-m
-fi
-
-tmux select-pane -t "$EDITOR_PANE"
+INITIAL_STATE="$(detect_layout "$TERM_COLS" "$TERM_LINES")"
+layout_build_initial "$SESSION" "$INITIAL_STATE" "$PROJECT_DIR" "$EDITOR_CMD" "$GIT_TOOL" "$TERM_COLS" "$TERM_LINES"
+layout_install_resize_hook "$SESSION" "$SCRIPT_PATH"
 
 if [ -n "${TMUX:-}" ]; then
   tmux switch-client -t "$SESSION"
