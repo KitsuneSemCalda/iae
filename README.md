@@ -10,10 +10,19 @@ Um único script (`iae`) monta uma sessão tmux com 4 painéis fixos:
 - **shell** — livre, o shell padrão do sistema
 - **git/logs** — `lazygit`
 
+## Instalação
+
+```sh
+ln -sfn "$(pwd)/iae" ~/.local/bin/iae
+```
+
+Deixa o comando `iae` disponível em qualquer diretório (assumindo
+`~/.local/bin` no `PATH`, já o padrão no Omarchy).
+
 ## Uso
 
 ```sh
-./iae [caminho-do-projeto]
+iae [caminho-do-projeto]
 ```
 
 Sem argumento, usa o diretório atual. Rodar de novo no mesmo projeto reconecta
