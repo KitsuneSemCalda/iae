@@ -109,9 +109,11 @@ layout_reflow() {
 
   # Scatter every non-anchor pane into its own window first, so the rebuild
   # below never has to reason about whatever arrangement it's currently in.
+  # Pin -t to this session: without it tmux drops the new window into whichever
+  # session is current server-wide, stealing panes when other sessions exist.
   local pane
   for pane in "$agent_pane" "$shell_pane" "$git_pane"; do
-    tmux break-pane -d -s "$pane" 2>/dev/null || true
+    tmux break-pane -d -s "$pane" -t "$session:" 2>/dev/null || true
   done
 
   case "$state" in

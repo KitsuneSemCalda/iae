@@ -9,6 +9,17 @@ SOCK="iae-test-$$"
 tmux() { command tmux -L "$SOCK" "$@"; }
 
 PROJECT_DIR="$(mktemp -d)"
+
+# Stub the long-running programs so panes stay alive and no real agent
+# (omarchy-agent -> claude) is launched inside the test server. Real editors
+# also exit on a bare directory argument, which would race the pane counts.
+STUB_BIN="$PROJECT_DIR/.stub-bin"
+mkdir -p "$STUB_BIN"
+printf '#!/bin/sh\nexec sleep 3600\n' >"$STUB_BIN/omarchy-agent"
+printf '#!/bin/sh\nexec sleep 3600\n' >"$STUB_BIN/editor-stub"
+chmod +x "$STUB_BIN/omarchy-agent" "$STUB_BIN/editor-stub"
+export PATH="$STUB_BIN:$PATH"
+
 cleanup() {
   tmux kill-server 2>/dev/null || true
   rm -rf "$PROJECT_DIR"
@@ -57,7 +68,7 @@ assert_role_exists() {
 
 for state in wide grid compact; do
   session="build-$state"
-  layout_build_initial "$session" "$state" "$PROJECT_DIR" bash "echo git" 200 50
+  layout_build_initial "$session" "$state" "$PROJECT_DIR" editor-stub "echo git" 200 50
   assert_panes "$session" 4
   if [ "$state" = compact ]; then
     assert_windows "$session" 2
@@ -75,7 +86,7 @@ echo "OK: layout_build_initial shapes"
 # --- layout_reflow: every transition preserves running processes ------------
 
 session="reflow-cycle"
-layout_build_initial "$session" compact "$PROJECT_DIR" bash "echo git" 80 24
+layout_build_initial "$session" compact "$PROJECT_DIR" editor-stub "echo git" 80 24
 
 declare -A pids
 for role in editor agent shell git; do
@@ -107,7 +118,7 @@ echo "OK: layout_reflow preserves pane processes across wide/grid/compact"
 # --- layout_reflow: no-op when the pane set is incomplete --------------------
 
 session="reflow-missing-pane"
-layout_build_initial "$session" grid "$PROJECT_DIR" bash "echo git" 200 50
+layout_build_initial "$session" grid "$PROJECT_DIR" editor-stub "echo git" 200 50
 git_pane="$(find_pane_by_role "$session" git)"
 tmux kill-pane -t "$git_pane"
 layout_reflow "$session" compact
