@@ -26,11 +26,13 @@ jobs:
           bash -n lib/layout.sh
           bash -n tests/layout.sh
           bash -n tests/smoke.sh
+          bash -n tests/startup.sh
 
       - name: ShellCheck
-        run: shellcheck -x -P SCRIPTDIR iae install.sh lib/layout.sh tests/layout.sh tests/smoke.sh
+        run: shellcheck -x -P SCRIPTDIR iae install.sh lib/layout.sh tests/layout.sh tests/smoke.sh tests/startup.sh
 
       - name: Run tests
         run: |
           ./tests/layout.sh
           ./tests/smoke.sh
+          ./tests/startup.sh
