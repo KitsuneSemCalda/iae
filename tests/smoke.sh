@@ -23,17 +23,25 @@ trap cleanup EXIT
 
 git -C "$TEST_DIR" init -q
 
-# omarchy-agent only exists on real Omarchy installs, and the tmux CLI
+# The omarchy command only exists on real Omarchy installs, and the tmux CLI
 # needs to point at our isolated test server instead of the caller's real
 # one — stub both so this test runs anywhere, including plain CI runners.
 STUB_BIN="$TEST_DIR/bin"
 mkdir -p "$STUB_BIN"
 
-cat >"$STUB_BIN/omarchy-agent" <<'EOF'
+# A fake `omarchy` command center: reports nvim/stubagent as the defaults so
+# iae's Omarchy code path runs on any machine, and never launches a real agent.
+cat >"$STUB_BIN/omarchy" <<'EOF'
 #!/bin/sh
-exec sleep 3600
+case "$1 $2" in
+  "default editor") echo nvim ;;
+  "default agent") echo stubagent ;;
+  "cmd present") command -v "$3" >/dev/null 2>&1 ;;
+  "agent --inline") exec sleep 3600 ;;
+esac
 EOF
-chmod +x "$STUB_BIN/omarchy-agent"
+printf '#!/bin/sh\nexec sleep 3600\n' >"$STUB_BIN/stubagent"
+chmod +x "$STUB_BIN/omarchy" "$STUB_BIN/stubagent"
 
 REAL_TMUX="$(type -P tmux)"
 cat >"$STUB_BIN/tmux" <<EOF

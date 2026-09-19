@@ -11,13 +11,13 @@ tmux() { command tmux -L "$SOCK" "$@"; }
 PROJECT_DIR="$(mktemp -d)"
 
 # Stub the long-running programs so panes stay alive and no real agent
-# (omarchy-agent -> claude) is launched inside the test server. Real editors
+# (omarchy agent -> claude) is launched inside the test server. Real editors
 # also exit on a bare directory argument, which would race the pane counts.
 STUB_BIN="$PROJECT_DIR/.stub-bin"
 mkdir -p "$STUB_BIN"
-printf '#!/bin/sh\nexec sleep 3600\n' >"$STUB_BIN/omarchy-agent"
+printf '#!/bin/sh\nexec sleep 3600\n' >"$STUB_BIN/omarchy"
 printf '#!/bin/sh\nexec sleep 3600\n' >"$STUB_BIN/editor-stub"
-chmod +x "$STUB_BIN/omarchy-agent" "$STUB_BIN/editor-stub"
+chmod +x "$STUB_BIN/omarchy" "$STUB_BIN/editor-stub"
 export PATH="$STUB_BIN:$PATH"
 
 cleanup() {

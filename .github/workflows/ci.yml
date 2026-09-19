@@ -24,15 +24,18 @@ jobs:
           bash -n iae
           bash -n install.sh
           bash -n lib/layout.sh
+          bash -n lib/tools.sh
+          bash -n tests/tools.sh
           bash -n tests/layout.sh
           bash -n tests/smoke.sh
           bash -n tests/startup.sh
 
       - name: ShellCheck
-        run: shellcheck -x -P SCRIPTDIR iae install.sh lib/layout.sh tests/layout.sh tests/smoke.sh tests/startup.sh
+        run: shellcheck -x -P SCRIPTDIR iae install.sh lib/layout.sh lib/tools.sh tests/tools.sh tests/layout.sh tests/smoke.sh tests/startup.sh
 
       - name: Run tests
         run: |
+          ./tests/tools.sh
           ./tests/layout.sh
           ./tests/smoke.sh
           ./tests/startup.sh
