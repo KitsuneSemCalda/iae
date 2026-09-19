@@ -63,8 +63,7 @@ windows you switch between (`prefix` + window number, as usual in tmux).
 
 ## Installation
 
-The [Quick start](#quick-start) above is all most people need. In detail: clone the repository somewhere you're happy to keep it long-term, then run
-the installer:
+The [Quick start](#quick-start) above is all most people need. In detail: clone the repository, then run the installer:
 
 ```sh
 git clone https://github.com/KitsuneSemCalda/iae.git
@@ -72,11 +71,10 @@ cd iae
 ./install.sh
 ```
 
-This creates a symlink for `iae` in `~/.local/bin` (already on `PATH` by
-default on Omarchy), pointing at this clone, so the command works from any
-directory. Because it's a symlink, moving or deleting the clone breaks the
-`iae` command — reinstall from its new location if you move it. To install
-the symlink somewhere else, pass the destination as an argument:
+This installs a standalone executable in `~/.local/bin` (already on `PATH`
+by default on Omarchy), including its shell libraries. You can move or
+remove the clone afterward. Reinstalling also replaces the old symlink
+installation. To install somewhere else, pass the destination as an argument:
 
 ```sh
 ./install.sh ~/bin
@@ -87,10 +85,11 @@ the symlink somewhere else, pass the destination as an argument:
 ```sh
 cd path/to/iae
 git pull
+./install.sh
 ```
 
-The symlink always points at the clone, so a new command version is picked
-up immediately — no need to run `install.sh` again.
+Run the installer again after pulling changes (or cloning a fresh copy).
+Use the same destination argument if you installed somewhere else.
 
 ### Uninstalling
 
@@ -99,8 +98,8 @@ up immediately — no need to run `install.sh` again.
 ./install.sh --uninstall ~/bin      # if you installed somewhere else
 ```
 
-The clone itself (with its git history) can then be deleted if you don't
-plan on updating it again.
+If you already deleted the clone, remove the installed executable directly:
+`rm ~/.local/bin/iae` (or your custom destination).
 
 ## Usage
 
