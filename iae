@@ -7,6 +7,8 @@ SCRIPT_PATH="$(readlink -f "${BASH_SOURCE[0]}")"
 SCRIPT_DIR="$(dirname "$SCRIPT_PATH")"
 # shellcheck source=lib/layout.sh
 source "$SCRIPT_DIR/lib/layout.sh"
+# shellcheck source=lib/tools.sh
+source "$SCRIPT_DIR/lib/tools.sh"
 
 VERSION="0.2.0"
 
@@ -22,9 +24,9 @@ Options:
   -V, --version    show version
 
 Environment:
-  IAE_AGENT    command to run in the agent pane (default: omarchy-agent
-               --inline, else the first of claude, codex, opencode, gemini,
-               aider found on PATH)
+  IAE_AGENT    command to run in the agent pane (default: the Omarchy
+               default agent, else the first of claude, codex, opencode,
+               gemini, aider found on PATH)
   IAE_EDITOR   editor to run in the editor pane (default: Omarchy's default
                editor, else $VISUAL/$EDITOR, else nvim/vim/nano)
   IAE_GIT      git TUI for the git pane (default: tig, else lazygit)
@@ -61,17 +63,10 @@ if ! command -v tmux >/dev/null 2>&1; then
   exit 1
 fi
 
-GIT_TOOL=""
-for candidate in ${IAE_GIT:-} tig lazygit; do
-  if command -v "$candidate" >/dev/null 2>&1; then
-    GIT_TOOL="$candidate"
-    break
-  fi
-done
-if [ -z "$GIT_TOOL" ]; then
+GIT_TOOL="$(resolve_git_tool)" || {
   echo "iae: dependency 'tig' or 'lazygit' not found on PATH" >&2
   exit 1
-fi
+}
 
 PROJECT_DIR="${1:-$PWD}"
 PROJECT_DIR="$(cd "$PROJECT_DIR" && pwd -P)"
@@ -86,48 +81,19 @@ if tmux has-session -t "$SESSION" 2>/dev/null; then
   exit 0
 fi
 
-# Editor: IAE_EDITOR wins; then Omarchy's default when it's a TUI editor
-# (mirrors omarchy-launch-editor's allowlist — a GUI default like code would
-# detach and leave the pane idle); then $VISUAL/$EDITOR; then nvim/vim/nano.
-EDITOR_CMD="${IAE_EDITOR:-}"
-if [ -z "$EDITOR_CMD" ] && command -v omarchy-default-editor >/dev/null 2>&1; then
-  candidate="$(omarchy-default-editor 2>/dev/null || true)"
-  case "$candidate" in
-    nvim | vim | nano | micro | hx | helix | fresh) EDITOR_CMD="$candidate" ;;
-  esac
-fi
-for candidate in "$EDITOR_CMD" "${VISUAL:-}" "${EDITOR:-}" nvim vim nano; do
-  [ -n "$candidate" ] || continue
-  if command -v "${candidate%% *}" >/dev/null 2>&1; then
-    EDITOR_CMD="$candidate"
-    break
-  fi
-  EDITOR_CMD=""
-done
-if [ -z "$EDITOR_CMD" ]; then
+EDITOR_CMD="$(resolve_editor)" || {
   echo "iae: no editor found (install nvim/vim/nano or set IAE_EDITOR)" >&2
   exit 1
-fi
+}
 
-# Agent: IAE_AGENT wins; then Omarchy's configured agent; then the first
-# well-known coding agent on PATH.
-AGENT_CMD="${IAE_AGENT:-}"
-if [ -z "$AGENT_CMD" ]; then
-  if command -v omarchy-agent >/dev/null 2>&1; then
-    AGENT_CMD="omarchy-agent --inline"
+AGENT_CMD="$(resolve_agent)" || {
+  if on_omarchy; then
+    echo "iae: no coding agent available; choose one with: omarchy default agent <name>" >&2
   else
-    for candidate in claude codex opencode gemini aider; do
-      if command -v "$candidate" >/dev/null 2>&1; then
-        AGENT_CMD="$candidate"
-        break
-      fi
-    done
+    echo "iae: no coding agent found (install claude, codex, opencode, gemini or aider, or set IAE_AGENT)" >&2
   fi
-fi
-if [ -z "$AGENT_CMD" ]; then
-  echo "iae: no coding agent found (install claude, codex, opencode, gemini or aider, or set IAE_AGENT)" >&2
   exit 1
-fi
+}
 
 # A detached session starts at tmux's default 80x24 until a client attaches,
 # so building the layout immediately would compute it against that size.
