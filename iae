@@ -56,12 +56,10 @@ case "${1:-}" in
   -*) echo "iae: unknown option '$1' (try --help)" >&2; exit 2 ;;
 esac
 
-for dep in tmux; do
-  if ! command -v "$dep" >/dev/null 2>&1; then
-    echo "iae: dependency '$dep' not found on PATH" >&2
-    exit 1
-  fi
-done
+if ! command -v tmux >/dev/null 2>&1; then
+  echo "iae: dependency 'tmux' not found on PATH" >&2
+  exit 1
+fi
 
 GIT_TOOL=""
 for candidate in ${IAE_GIT:-} tig lazygit; do
