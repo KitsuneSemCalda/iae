@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Resolve the real path, not the symlink's, so it works whether we're run
-# straight from the clone or via the ~/.local/bin symlink install.sh makes.
+# Resolve the executable path for resize hooks, including manual symlinks.
 SCRIPT_PATH="$(readlink -f "${BASH_SOURCE[0]}")"
 SCRIPT_DIR="$(dirname "$SCRIPT_PATH")"
 # shellcheck source=lib/layout.sh
