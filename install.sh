@@ -31,6 +31,7 @@ mkdir -p "$TARGET_DIR"
 # Rename a temporary file so upgrading a legacy symlink never writes into it.
 STAGED="$(mktemp "$TARGET_DIR/.iae.XXXXXX")"
 trap 'rm -f "$STAGED"' EXIT
+# shellcheck disable=SC2016 # the case patterns are literal source lines, not expansions
 while IFS= read -r line || [ -n "$line" ]; do
   case "$line" in
     'source "$SCRIPT_DIR/lib/layout.sh"') cat "$SCRIPT_DIR/lib/layout.sh" ;;
