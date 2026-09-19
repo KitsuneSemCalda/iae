@@ -16,7 +16,7 @@ Set Framerate 24
 # helper that resizes the session while iae is attached, so nothing is ever
 # typed into a pane. wide -> grid -> compact -> wide.
 Hide
-Type "export PATH=$PWD/assets/demo/bin:$PWD:$PATH PS1='$ '; export TMUX_TMPDIR=$(mktemp -d) IAE_AGENT=omarchy-agent; unset TMUX; clear"
+Type "export PATH=$PWD/assets/demo/bin:$PWD:$PATH PS1='$ '; export TMUX_TMPDIR=$(mktemp -d) IAE_AGENT=demo-agent; unset TMUX; clear"
 Enter
 Type `(sleep 6; s=$(tmux ls -F '#S' | head -1); for sz in '140 38' '100 30' '200 50'; do tmux resize-window -t $s -x ${sz% *} -y ${sz#* }; sleep 5; done) &`
 Enter

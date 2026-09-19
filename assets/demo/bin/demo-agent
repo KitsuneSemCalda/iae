@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Stand-in for `omarchy-agent --inline`, used only when recording the demo
+# Stand-in for the agent pane's command (`omarchy agent --inline`), used only when recording the demo
 # so the GIF never shows a real agent session (or its account details).
 clear
 printf '\033[1;35m●\033[0m \033[1magent\033[0m ready\n\n'
