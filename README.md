@@ -5,20 +5,45 @@
 ![Shell](https://img.shields.io/badge/shell-bash-89e051?logo=gnubash&logoColor=white)
 ![Built for Omarchy](https://img.shields.io/badge/built%20for-omarchy-1793d1)
 
-A tmux workspace for agentic development, inspired by craftzdog's
-tmux+editor setup, built to run on [Omarchy Linux](https://omarchy.org).
+> One command, four tools: **editor**, **coding agent**, **shell** and **git**,
+> in a tmux workspace that re-lays itself out as you resize the terminal.
 
-A single script (`iae`) sets up a tmux session with 4 tools, each with a
-fixed role regardless of how they're arranged on screen:
+![iae reflowing live from wide to grid to compact and back](assets/demo/iae.gif)
 
-- **editor** — Omarchy's default editor (`omarchy-default-editor`), when it's a TUI editor (nvim, vim, nano, micro, helix); falls back to `nvim` otherwise
-- **agent** — Omarchy's default coding agent (`omarchy-agent`, configurable via `omarchy default agent <name>`)
-- **shell** — free, the system's default shell
-- **git/logs** — `tig`, falling back to `lazygit` if `tig` isn't installed
+Inspired by craftzdog's tmux+editor setup. Built for
+[Omarchy Linux](https://omarchy.org) (it picks up your Omarchy defaults
+automatically), but it runs on any Linux or macOS machine with `tmux`.
+
+## Quick start
+
+```sh
+git clone https://github.com/KitsuneSemCalda/iae.git
+cd iae && ./install.sh
+cd ~/code/myproject && iae
+```
+
+Not on Omarchy? Pick your tools with `IAE_AGENT`, `IAE_EDITOR` and `IAE_GIT`
+(see [Configuration](#configuration)).
+
+## What you get
+
+Each tool has a fixed role, regardless of how the panes are arranged:
+
+| Pane | Tool |
+|------|------|
+| **editor** | Omarchy's default editor (`omarchy-default-editor`) when it's a TUI editor (nvim, vim, nano, micro, helix); `nvim` otherwise |
+| **agent** | Omarchy's default coding agent (`omarchy-agent`, set with `omarchy default agent <name>`) |
+| **shell** | free, your system's default shell |
+| **git/logs** | `tig`, falling back to `lazygit` |
 
 ![Editor, agent, shell and git/logs panes side by side](assets/screenshots/overview.png)
 
+<details>
+<summary>More: tig in the git/logs pane</summary>
+
 ![tig showing a diff in the git/logs pane](assets/screenshots/git-log.png)
+
+</details>
 
 ### Responsive layout
 
@@ -38,7 +63,7 @@ windows you switch between (`prefix` + window number, as usual in tmux).
 
 ## Installation
 
-Clone the repository somewhere you're happy to keep it long-term, then run
+The [Quick start](#quick-start) above is all most people need. In detail: clone the repository somewhere you're happy to keep it long-term, then run
 the installer:
 
 ```sh
@@ -141,3 +166,19 @@ shellcheck -x -P SCRIPTDIR iae install.sh lib/layout.sh tests/*.sh
 ```
 
 The same checks run in CI on every push (see `.github/workflows/ci.yml`).
+
+## Regenerating the demo and screenshots
+
+The GIF is scripted with [VHS](https://github.com/charmbracelet/vhs), so it
+can be re-recorded whenever the UI changes:
+
+```sh
+vhs assets/demo/demo.tape   # needs vhs, ttyd, ffmpeg, tmux, tig/lazygit, nvim
+```
+
+It runs on a private tmux server and a stub agent (`assets/demo/bin/`), so it
+never touches your real sessions or shows a real agent's output.
+
+## License
+
+See [LICENSE](LICENSE).

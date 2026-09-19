@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# Stand-in for `omarchy-agent --inline`, used only when recording the demo
+# so the GIF never shows a real agent session (or its account details).
+clear
+printf '\033[1;35m●\033[0m \033[1magent\033[0m ready\n\n'
+printf '\033[2m> add a dark-mode toggle to the settings page\033[0m\n\n'
+printf '\033[36m● Reading src/settings.ts\033[0m\n'
+printf '\033[36m● Editing src/theme.ts (+18 -2)\033[0m\n'
+printf '\033[32m✓ Done. 2 files changed.\033[0m\n\n'
+exec sleep infinity
