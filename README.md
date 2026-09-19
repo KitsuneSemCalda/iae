@@ -180,6 +180,10 @@ vhs assets/demo/demo.tape   # needs vhs, ttyd, ffmpeg, tmux, tig/lazygit, nvim
 It runs on a private tmux server and a stub agent (`assets/demo/bin/`), so it
 never touches your real sessions or shows a real agent's output.
 
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md).
+
 ## License
 
 See [LICENSE](LICENSE).
