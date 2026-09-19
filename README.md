@@ -95,7 +95,8 @@ up immediately — no need to run `install.sh` again.
 ### Uninstalling
 
 ```sh
-rm ~/.local/bin/iae   # or wherever install.sh put the symlink
+./install.sh --uninstall            # removes ~/.local/bin/iae
+./install.sh --uninstall ~/bin      # if you installed somewhere else
 ```
 
 The clone itself (with its git history) can then be deleted if you don't
