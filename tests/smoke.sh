@@ -42,6 +42,13 @@ exec "$REAL_TMUX" -L "$SOCK" "\$@"
 EOF
 chmod +x "$STUB_BIN/tmux"
 
+# CLI surface: --help / --version exit 0, unknown flags exit 2.
+"$REPO_ROOT/iae" --help | grep -q '^Usage: iae' || { echo "FAIL: --help"; exit 1; }
+"$REPO_ROOT/iae" --version | grep -q '^iae ' || { echo "FAIL: --version"; exit 1; }
+rc=0; "$REPO_ROOT/iae" --bogus 2>/dev/null || rc=$?
+[ "$rc" = 2 ] || { echo "FAIL: unknown flag exit code $rc"; exit 1; }
+echo "OK: CLI flags"
+
 SESSION="iae-$(basename "$TEST_DIR" | tr '.: ' '_')-$(printf '%s' "$TEST_DIR" | cksum | cut -d' ' -f1)"
 
 # No controlling terminal here, so `stty size` fails and iae falls back to

@@ -8,6 +8,32 @@ SCRIPT_DIR="$(dirname "$SCRIPT_PATH")"
 # shellcheck source=lib/layout.sh
 source "$SCRIPT_DIR/lib/layout.sh"
 
+VERSION="0.2.0"
+
+usage() {
+  cat <<'USAGE'
+Usage: iae [options] [project-path]
+
+Opens (or reattaches to) a 4-pane tmux workspace for agentic development:
+editor, coding agent, shell and git/logs.
+
+Options:
+  -h, --help       show this help
+  -V, --version    show version
+
+Environment:
+  IAE_AGENT    command to run in the agent pane (default: omarchy-agent
+               --inline, else the first of claude, codex, opencode, gemini,
+               aider found on PATH)
+  IAE_EDITOR   editor to run in the editor pane (default: Omarchy's default
+               editor, else $VISUAL/$EDITOR, else nvim/vim/nano)
+  IAE_GIT      git TUI for the git pane (default: tig, else lazygit)
+
+Requires tmux. Works on any Linux/macOS with tmux; Omarchy defaults are
+used automatically when present.
+USAGE
+}
+
 # Internal entry point: the window-resized hook (see layout_install_resize_hook)
 # calls back into this same script to reflow an already-running session.
 if [ "${1:-}" = "--reflow" ]; then
@@ -24,7 +50,13 @@ if [ "${1:-}" = "--reflow" ]; then
   exit 0
 fi
 
-for dep in tmux omarchy-agent; do
+case "${1:-}" in
+  -h | --help) usage; exit 0 ;;
+  -V | --version) echo "iae $VERSION"; exit 0 ;;
+  -*) echo "iae: unknown option '$1' (try --help)" >&2; exit 2 ;;
+esac
+
+for dep in tmux; do
   if ! command -v "$dep" >/dev/null 2>&1; then
     echo "iae: dependency '$dep' not found on PATH" >&2
     exit 1
@@ -32,7 +64,7 @@ for dep in tmux omarchy-agent; do
 done
 
 GIT_TOOL=""
-for candidate in tig lazygit; do
+for candidate in ${IAE_GIT:-} tig lazygit; do
   if command -v "$candidate" >/dev/null 2>&1; then
     GIT_TOOL="$candidate"
     break
@@ -56,20 +88,47 @@ if tmux has-session -t "$SESSION" 2>/dev/null; then
   exit 0
 fi
 
-# Mirrors omarchy-launch-editor's own TUI allowlist: only these are safe to
-# exec inline in a tmux pane. A GUI default (code, cursor, emacs, ...) would
-# detach and leave the pane idle, so fall back to nvim instead.
-EDITOR_CMD="$(omarchy-default-editor 2>/dev/null || echo nvim)"
-case "$EDITOR_CMD" in
-  nvim | vim | nano | micro | hx | helix | fresh) ;;
-  *) EDITOR_CMD="nvim" ;;
-esac
-if ! command -v "$EDITOR_CMD" >/dev/null 2>&1; then
-  if [ "$EDITOR_CMD" = "nvim" ] || ! command -v nvim >/dev/null 2>&1; then
-    echo "iae: editor '$EDITOR_CMD' not found on PATH (and no 'nvim' fallback available)" >&2
-    exit 1
+# Editor: IAE_EDITOR wins; then Omarchy's default when it's a TUI editor
+# (mirrors omarchy-launch-editor's allowlist — a GUI default like code would
+# detach and leave the pane idle); then $VISUAL/$EDITOR; then nvim/vim/nano.
+EDITOR_CMD="${IAE_EDITOR:-}"
+if [ -z "$EDITOR_CMD" ] && command -v omarchy-default-editor >/dev/null 2>&1; then
+  candidate="$(omarchy-default-editor 2>/dev/null || true)"
+  case "$candidate" in
+    nvim | vim | nano | micro | hx | helix | fresh) EDITOR_CMD="$candidate" ;;
+  esac
+fi
+for candidate in "$EDITOR_CMD" "${VISUAL:-}" "${EDITOR:-}" nvim vim nano; do
+  [ -n "$candidate" ] || continue
+  if command -v "${candidate%% *}" >/dev/null 2>&1; then
+    EDITOR_CMD="$candidate"
+    break
   fi
-  EDITOR_CMD="nvim"
+  EDITOR_CMD=""
+done
+if [ -z "$EDITOR_CMD" ]; then
+  echo "iae: no editor found (install nvim/vim/nano or set IAE_EDITOR)" >&2
+  exit 1
+fi
+
+# Agent: IAE_AGENT wins; then Omarchy's configured agent; then the first
+# well-known coding agent on PATH.
+AGENT_CMD="${IAE_AGENT:-}"
+if [ -z "$AGENT_CMD" ]; then
+  if command -v omarchy-agent >/dev/null 2>&1; then
+    AGENT_CMD="omarchy-agent --inline"
+  else
+    for candidate in claude codex opencode gemini aider; do
+      if command -v "$candidate" >/dev/null 2>&1; then
+        AGENT_CMD="$candidate"
+        break
+      fi
+    done
+  fi
+fi
+if [ -z "$AGENT_CMD" ]; then
+  echo "iae: no coding agent found (install claude, codex, opencode, gemini or aider, or set IAE_AGENT)" >&2
+  exit 1
 fi
 
 # A detached session starts at tmux's default 80x24 until a client attaches,
@@ -82,7 +141,7 @@ TERM_COLS="${TERM_COLS:-80}"
 TERM_LINES="${TERM_LINES:-24}"
 
 INITIAL_STATE="$(detect_layout "$TERM_COLS" "$TERM_LINES")"
-layout_build_initial "$SESSION" "$INITIAL_STATE" "$PROJECT_DIR" "$EDITOR_CMD" "$GIT_TOOL" "$TERM_COLS" "$TERM_LINES"
+layout_build_initial "$SESSION" "$INITIAL_STATE" "$PROJECT_DIR" "$EDITOR_CMD" "$GIT_TOOL" "$TERM_COLS" "$TERM_LINES" "$AGENT_CMD"
 layout_install_resize_hook "$SESSION" "$SCRIPT_PATH"
 
 if [ -n "${TMUX:-}" ]; then

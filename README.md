@@ -89,14 +89,41 @@ just the folder name), so different projects sharing a directory name
 (e.g. two `src/`) don't collide, and symlinks to the same project reattach
 to the same session.
 
+## Configuration
+
+`iae` works out of the box on Omarchy, and on any other Linux/macOS box with
+`tmux`. Each pane's tool is resolved in this order:
+
+| Pane   | Override      | Then                                                                  |
+|--------|---------------|-----------------------------------------------------------------------|
+| editor | `IAE_EDITOR`  | Omarchy's default (TUI editors only), `$VISUAL`, `$EDITOR`, `nvim`, `vim`, `nano` |
+| agent  | `IAE_AGENT`   | `omarchy-agent --inline`, else the first of `claude`, `codex`, `opencode`, `gemini`, `aider` on `PATH` |
+| git    | `IAE_GIT`     | `tig`, then `lazygit`                                                 |
+| shell  | —             | your default shell                                                    |
+
+```sh
+IAE_AGENT="claude --resume" IAE_EDITOR=hx iae ~/code/myproject
+```
+
+Other commands: `iae --help`, `iae --version`.
+
 ## Dependencies
 
-`tmux` and `omarchy-agent` need to be on `PATH` (default on any Omarchy
-install), plus at least one of `tig` or `lazygit`. The editor pane uses
-whatever `omarchy-default-editor` reports (nvim, vim, nano, micro or
-helix), falling back to `nvim` if that's unset or set to a GUI editor — so
-`nvim` only needs to be installed if you haven't configured one of the
-others, or as a safety net if the configured one is missing.
+- `tmux` (required)
+- at least one of `tig` or `lazygit`
+- a TUI editor (`nvim`, `vim`, `nano`, `helix`, ...)
+- a coding agent CLI (Omarchy's `omarchy-agent`, or any of the ones listed above)
+
+On Omarchy all of these are wired up already; elsewhere, install them and
+optionally set the `IAE_*` variables above.
+
+## Troubleshooting
+
+- **`iae: no coding agent found`** — install one of the supported agents or set `IAE_AGENT`.
+- **`iae: dependency 'tig' or 'lazygit' not found`** — install either one (e.g. `sudo pacman -S tig`, `sudo apt install tig`, `brew install tig`).
+- **Editor pane is idle** — your configured editor is a GUI app; set `IAE_EDITOR` to a terminal editor.
+- **`iae` command not found** — make sure `~/.local/bin` is on your `PATH`.
+- **Panes look wrong after resizing** — `iae` reflows automatically via tmux's `window-resized` hook; needs tmux ≥ 3.0.
 
 ## Testing
 

@@ -50,6 +50,7 @@ find_pane_by_role() {
 # reflow always re-derives them from @iae-role.
 layout_build_initial() {
   local session=$1 state=$2 project_dir=$3 editor_cmd=$4 git_tool=$5 cols=$6 lines=$7
+  local agent_cmd=${8:-"omarchy-agent --inline"}
 
   local editor_pane
   editor_pane=$(tmux new-session -d -s "$session" -x "$cols" -y "$lines" -c "$project_dir" -n main -P -F '#{pane_id}')
@@ -81,7 +82,7 @@ layout_build_initial() {
   tag_pane_role "$agent_pane" agent
   tag_pane_role "$shell_pane" shell
   tag_pane_role "$git_pane" git
-  tmux send-keys -t "$agent_pane" "omarchy-agent --inline" C-m
+  tmux send-keys -t "$agent_pane" "$agent_cmd" C-m
 
   if git -C "$project_dir" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
     tmux send-keys -t "$git_pane" "$git_tool" C-m
