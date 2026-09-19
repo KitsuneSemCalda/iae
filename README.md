@@ -31,8 +31,8 @@ Each tool has a fixed role, regardless of how the panes are arranged:
 
 | Pane | Tool |
 |------|------|
-| **editor** | Omarchy's default editor (`omarchy-default-editor`) when it's a TUI editor (nvim, vim, nano, micro, helix); `nvim` otherwise |
-| **agent** | Omarchy's default coding agent (`omarchy-agent`, set with `omarchy default agent <name>`) |
+| **editor** | Omarchy's default editor (`omarchy default editor`) when it's a TUI editor (nvim, vim, nano, micro, helix); `nvim` otherwise |
+| **agent** | Omarchy's default coding agent (`omarchy agent --inline`, set with `omarchy default agent <name>`) |
 | **shell** | free, your system's default shell |
 | **git/logs** | `tig`, falling back to `lazygit` |
 
@@ -123,7 +123,7 @@ to the same session.
 | Pane   | Override      | Then                                                                  |
 |--------|---------------|-----------------------------------------------------------------------|
 | editor | `IAE_EDITOR`  | Omarchy's default (TUI editors only), `$VISUAL`, `$EDITOR`, `nvim`, `vim`, `nano` |
-| agent  | `IAE_AGENT`   | `omarchy-agent --inline`, else the first of `claude`, `codex`, `opencode`, `gemini`, `aider` on `PATH` |
+| agent  | `IAE_AGENT`   | the Omarchy default agent, else the first of `claude`, `codex`, `opencode`, `gemini`, `aider` on `PATH` |
 | git    | `IAE_GIT`     | `tig`, then `lazygit`                                                 |
 | shell  | —             | your default shell                                                    |
 
@@ -138,7 +138,7 @@ Other commands: `iae --help`, `iae --version`.
 - `tmux` (required)
 - at least one of `tig` or `lazygit`
 - a TUI editor (`nvim`, `vim`, `nano`, `helix`, ...)
-- a coding agent CLI (Omarchy's `omarchy-agent`, or any of the ones listed above)
+- a coding agent CLI (Omarchy's default agent, or any of the ones listed above)
 
 On Omarchy all of these are wired up already; elsewhere, install them and
 optionally set the `IAE_*` variables above.
@@ -156,6 +156,8 @@ optionally set the `IAE_*` variables above.
 ```sh
 bash -n iae install.sh lib/layout.sh tests/*.sh      # syntax check
 shellcheck -x -P SCRIPTDIR iae install.sh lib/layout.sh tests/*.sh
+./tests/tools.sh                                  # editor/agent/git resolution,
+                                                   # with and without `omarchy`
 ./tests/layout.sh                                 # unit tests for the
                                                    # wide/grid/compact state
                                                    # machine (lib/layout.sh)
