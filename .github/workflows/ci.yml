@@ -30,9 +30,10 @@ jobs:
           bash -n tests/layout.sh
           bash -n tests/smoke.sh
           bash -n tests/startup.sh
+          bash -n tests/paths.sh
 
       - name: ShellCheck
-        run: shellcheck -x -P SCRIPTDIR iae install.sh lib/layout.sh lib/tools.sh tests/install.sh tests/tools.sh tests/layout.sh tests/smoke.sh tests/startup.sh
+        run: shellcheck -x -P SCRIPTDIR iae install.sh lib/layout.sh lib/tools.sh tests/install.sh tests/tools.sh tests/layout.sh tests/smoke.sh tests/startup.sh tests/paths.sh
 
       - name: Run tests
         run: |
@@ -41,3 +42,4 @@ jobs:
           ./tests/layout.sh
           ./tests/smoke.sh
           ./tests/startup.sh
+          ./tests/paths.sh

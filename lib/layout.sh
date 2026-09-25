@@ -142,10 +142,27 @@ layout_reflow() {
   tmux set-option -t "$session" @iae-layout "$state"
 }
 
+# POSIX-sh single-quotes a value: wraps it in '...', turning any embedded
+# single quote into '\'' (close the quote, an escaped literal quote, reopen).
+_iae_sh_quote() {
+  local value=$1
+  printf "'%s'" "${value//\'/\'\\\'\'}"
+}
+
 # Registers the resize hook that drives reflow. Scoped to this one session
 # (no -g), so it never fires for the user's other, unrelated tmux sessions.
+#
+# The hook body goes through two rounds of parsing: tmux's own command
+# parser reads it when the hook fires, and the "run-shell" argument it
+# extracts is then run via `sh -c` by tmux. The outer double quotes are for
+# the first round (tmux); they leave the single quotes from _iae_sh_quote
+# untouched so the second round (sh) sees $script_path/$session as one
+# argument each, even when they contain spaces.
 layout_install_resize_hook() {
   local session=$1 script_path=$2
+  local quoted_path quoted_session
+  quoted_path=$(_iae_sh_quote "$script_path")
+  quoted_session=$(_iae_sh_quote "$session")
   tmux set-hook -t "$session" window-resized \
-    "run-shell -b '$script_path --reflow $session'"
+    "run-shell -b \"$quoted_path --reflow $quoted_session\""
 }
