@@ -1,0 +1,12 @@
+# Editor/IDE
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+
+# OS cruft
+.DS_Store
+
+# Local scratch/log output
+*.log
